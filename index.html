@@ -165,7 +165,7 @@
 
             .info-title {
                 color: hsl(0, 0%, 59%);
-                margin-bottom: 0.825rem;
+                margin: 0 0 0.825rem 0;
                 text-transform: uppercase;
                 letter-spacing: 2px;
                 font-size: 0.75rem;
@@ -176,6 +176,7 @@
                 font-size: 1.75rem;
                 font-weight: 500;
                 text-align: left;
+                margin: 0;
             }
 
             .alert {
@@ -282,45 +283,48 @@
         </style>
     </head>
     <body>
-        <div class="info-container">
+        <header class="info-container">
             <h1>IP Address Tracker</h1>
-            <div class="search-bar">
+            <form class="search-bar">
                 <input
                     type="text"
                     placeholder="Search for any IP address or domain"
                 />
-                <button><i class="fa fa-chevron-right"></i></button>
-            </div>
-            <div class="info">
-                <div class="info-section">
-                    <div class="info-title">IP Address</div>
-                    <div class="info-value" id="ip">192.212.174.101</div>
-                </div>
-                <div class="info-section">
-                    <div class="info-title">Location</div>
-                    <div class="info-value" id="location">
-                        Brooklyn, NY 10001
-                    </div>
-                </div>
-                <div class="info-section">
-                    <div class="info-title">Timezone</div>
-                    <div class="info-value" id="timezone">UTC -05:00</div>
-                </div>
-                <div class="info-section">
-                    <div class="info-title">ISP</div>
-                    <div class="info-value" id="isp">SpaceX Starlink</div>
-                </div>
-            </div>
-        </div>
-        <div id="map"></div>
-        <div class="alert" style="scale: 0">
+                <button aria-label="Search" type="submit">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </form>
+            <article class="info">
+                <section class="info-section">
+                    <p class="info-title">IP Address</p>
+                    <p class="info-value" id="ip">192.212.174.101</p>
+                </section>
+                <section class="info-section">
+                    <p class="info-title">Location</p>
+                    <p class="info-value" id="location">Brooklyn, NY 10001</p>
+                </section>
+                <section class="info-section">
+                    <p class="info-title">Timezone</p>
+                    <p class="info-value" id="timezone">UTC -05:00</p>
+                </section>
+                <section class="info-section">
+                    <p class="info-title">ISP</p>
+                    <p class="info-value" id="isp">SpaceX Starlink</p>
+                </section>
+            </article>
+        </header>
+        <main id="map"></main>
+        <footer class="alert" style="scale: 0">
             <p>
                 Unfortunately, an error occurred while fetching the data. Are
                 you sure you entered a valid IP address or domain?
             </p>
-        </div>
+        </footer>
     </body>
     <script>
+        const DEFAULT_ICON_CLASS = 'fa-chevron-right';
+        const LOADING_ICON_CLASS = 'fa-circle-notch';
+        const LOADING_ANIMATION_CLASS = 'fa-spin';
         const mymap = L.map('map').setView(
             [40.67789994017186, -73.94835219196233],
             13
@@ -350,10 +354,12 @@
             return null;
         };
 
-        const handleClick = () => {
+        const handleSubmit = (event) => {
+            event.preventDefault();
             const input = document.querySelector('input');
             const searchBar = document.querySelector('.search-bar');
             const alert = document.querySelector('.alert');
+            const icon = document.querySelector('i');
             searchBar.classList.remove('invalid');
             const { value } = input;
             const type = validateInputAndGetType(value);
@@ -367,6 +373,8 @@
                 input.placeholder = 'Search for any IP address or domain';
             }
 
+            icon.classList.remove(DEFAULT_ICON_CLASS);
+            icon.classList.add(LOADING_ICON_CLASS, LOADING_ANIMATION_CLASS);
             const url = `https://geo.ipify.org/api/v1?apiKey=at_LGnlN9WkQASYjAGku28MfdfbwxAmn&${type}=${value}`;
             fetch(url)
                 .then((response) => response.json())
@@ -391,10 +399,17 @@
                     setTimeout(() => {
                         alert.style.scale = 0;
                     }, 5000);
+                })
+                .finally(() => {
+                    icon.classList.remove(
+                        LOADING_ICON_CLASS,
+                        LOADING_ANIMATION_CLASS
+                    );
+                    icon.classList.add(DEFAULT_ICON_CLASS);
                 });
         };
 
-        const button = document.querySelector('button');
-        button.addEventListener('click', handleClick);
+        const form = document.querySelector('form');
+        form.addEventListener('submit', handleSubmit);
     </script>
 </html>
